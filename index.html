@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>Cowsay</title>
-    <script src="https://unpkg.com/cowsay@1.5.0/build/cowsay.umd.js"></script>
     <style>
       /* Custom CSS for StackBlitz */
       body {
@@ -63,21 +62,37 @@
         }
       }
 
-      var packages = ['axios'];
+      var packages = ['axios', 'cowsay'];
       loadPackages(packages, function () {
         try {
+          var text = '';
           axios
             .get('https://jsonplaceholder.typicode.com/posts/1')
             .then(function (response) {
+              text = response.data.body;
+
+              // Generate cowsay speech
               var speech = cowsay.say({
-                text: response.data.body,
-                e: 'oO',
-                t: 'U ',
+                text: text,
               });
+
+              // Replace default eye and tongue characters
+              speech = speech.replace(/<\$\$>/g, 'oO').replace(/<\\>/g, 'U ');
+
               document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
             })
             .catch(function (error) {
-              document.getElementById('cow-speech').innerHTML = error;
+              text = error;
+
+              // Generate cowsay speech
+              var speech = cowsay.say({
+                text: text,
+              });
+
+              // Replace default eye and tongue characters
+              speech = speech.replace(/<\$\$>/g, 'oO').replace(/<\\>/g, 'U ');
+
+              document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
             });
         } catch (e) {
           document.getElementById('cow-speech').innerHTML = e;
