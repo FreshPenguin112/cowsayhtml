@@ -42,10 +42,13 @@
     <div id="cow-speech"></div>
 
     <script>
-      function loadPackage(packageName, callback) {
+      function loadScript(url, callback) {
         var script = document.createElement('script');
-        script.src = `https://unpkg.com/${packageName}`;
+        script.src = url;
         script.onload = callback;
+        script.onerror = function () {
+          throw new Error(`Failed to load script: ${url}`);
+        };
         document.head.appendChild(script);
       }
 
@@ -57,12 +60,44 @@
             callback();
           }
         }
-        for (var i = 0; i < packages.length; i++) {
-          loadPackage(packages[i], packageLoaded);
+
+        function loadNextPackage(index) {
+          var packageName = packages[index];
+          var urls = [
+            `https://unpkg.com/${packageName}/dist/${packageName}.min.js`,
+            `https://unpkg.com/${packageName}/build/${packageName}.min.js`,
+            `https://unpkg.com/${packageName}/umd/${packageName}.min.js`,
+            `https://unpkg.com/${packageName}/${packageName}.min.js`,
+            `https://unpkg.com/${packageName}/dist/${packageName}.min.mjs`,
+            `https://unpkg.com/${packageName}/build/${packageName}.min.mjs`,
+            `https://unpkg.com/${packageName}/umd/${packageName}.min.mjs`,
+            `https://unpkg.com/${packageName}/${packageName}.min.mjs`,
+            `https://unpkg.com/${packageName}/build/${packageName}.umd.js`,
+          ];
+
+          function tryNextURL(urlIndex) {
+            if (urlIndex >= urls.length) {
+              if (index < packages.length - 1) {
+                loadNextPackage(index + 1);
+              } else {
+                throw new Error(`Failed to load ${packageName} package.`);
+              }
+            } else {
+              var url = urls[urlIndex];
+              loadScript(url, function () {
+                packageLoaded();
+                callback();
+              });
+            }
+          }
+
+          tryNextURL(0);
         }
+
+        loadNextPackage(0);
       }
 
-      var packages = ['axios', 'cowsay', 'confetti'];
+      var packages = ['axios', 'cowsay', 'canvas-confetti'];
       loadPackages(packages, function () {
         try {
           var text = '';
@@ -115,6 +150,7 @@
               document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
             });
         } catch (e) {
+          console.error(e);
           document.getElementById('cow-speech').innerHTML = e;
         }
       });
