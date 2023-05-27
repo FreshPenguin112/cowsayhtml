@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cowsay</title>
+    <script src="https://unpkg.com/cowsay@1.5.0/build/cowsay.umd.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div id="cow-speech"></div>
+
+    <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+    <script>
+      try {
+        axios
+          .get('https://jsonplaceholder.typicode.com/posts/1')
+          .then(function (response) {
+            var speech = cowsay.say({
+              text: response.data.body,
+              e: 'oO',
+              t: 'U ',
+            });
+            document.getElementById(
+              'cow-speech'
+            ).innerHTML = `<pre>${speech}</pre>`;
+          })
+          .catch(function (error) {
+            document.getElementById('cow-speech').innerHTML = error;
+          });
+      } catch (e) {
+        document.getElementById('cow-speech').innerHTML = e;
+      }
+    </script>
+  </body>
+</html>

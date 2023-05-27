@@ -1,0 +1,26 @@
+html {
+  filter: invert(100%);
+}
+
+#cow-speech {
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre;
+  margin: 20px;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%; /* Updated property */
+  text-align: center;
+  line-height: 1.4;
+}
+
+#cow-speech pre {
+  margin: 0;
+}
+
+#cow-speech .cow {
+  margin-bottom: 10px;
+  white-space: pre;
+}
