@@ -62,7 +62,7 @@
         }
       }
 
-      var packages = ['axios', 'cowsay'];
+      var packages = ['axios', 'cowsay', 'confetti'];
       loadPackages(packages, function () {
         try {
           var text = '';
@@ -94,6 +94,7 @@
               speech = speech.replace('oo', 'oO').replace('(__)', '(O)');
 
               document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
+              confetti();
             })
             .catch(function (error) {
               text = error;
