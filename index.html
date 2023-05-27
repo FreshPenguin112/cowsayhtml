@@ -66,13 +66,27 @@
       loadPackages(packages, function () {
         try {
           var text = '';
+          var speech = '';
+
+          // Check if required variables/functions are exported by the package
+          for (var i = 0; i < packages.length; i++) {
+            if (typeof window[packages[i]] === 'undefined') {
+              throw new Error(`Failed to load ${packages[i]} package.`);
+            }
+          }
+
           axios
             .get('https://jsonplaceholder.typicode.com/todos/1')
             .then(function (response) {
               text = response.data.title;
 
+              // Check if the required function exists in the cowsay package
+              if (typeof cowsay.say !== 'function') {
+                throw new Error('Invalid cowsay package.');
+              }
+
               // Generate cowsay speech
-              var speech = cowsay.say({
+              speech = cowsay.say({
                 text: text,
               });
 
@@ -84,8 +98,13 @@
             .catch(function (error) {
               text = error;
 
+              // Check if the required function exists in the cowsay package
+              if (typeof cowsay.say !== 'function') {
+                throw new Error('Invalid cowsay package.');
+              }
+
               // Generate cowsay speech
-              var speech = cowsay.say({
+              speech = cowsay.say({
                 text: text,
               });
 
