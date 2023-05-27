@@ -3,31 +3,86 @@
   <head>
     <title>Cowsay</title>
     <script src="https://unpkg.com/cowsay@1.5.0/build/cowsay.umd.js"></script>
+    <style>
+      /* Custom CSS for StackBlitz */
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      html {
+        filter: invert(100%);
+      }
+
+      #cow-speech {
+        font-family: monospace;
+        font-size: 14px;
+        white-space: pre;
+        margin: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100vw;
+        height: 100vh;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      #cow-speech pre {
+        margin: 0;
+      }
+
+      #cow-speech .cow {
+        margin-bottom: 10px;
+        white-space: pre;
+      }
+    </style>
   </head>
   <body>
     <div id="cow-speech"></div>
 
-    <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
     <script>
-      try {
-        axios
-          .get('https://jsonplaceholder.typicode.com/posts/1')
-          .then(function (response) {
-            var speech = cowsay.say({
-              text: response.data.body,
-              e: 'oO',
-              t: 'U ',
-            });
-            document.getElementById(
-              'cow-speech'
-            ).innerHTML = `<pre>${speech}</pre>`;
-          })
-          .catch(function (error) {
-            document.getElementById('cow-speech').innerHTML = error;
-          });
-      } catch (e) {
-        document.getElementById('cow-speech').innerHTML = e;
+      function loadPackage(packageName, callback) {
+        var script = document.createElement('script');
+        script.src = `https://unpkg.com/${packageName}`;
+        script.onload = callback;
+        document.head.appendChild(script);
       }
+
+      function loadPackages(packages, callback) {
+        var count = packages.length;
+        function packageLoaded() {
+          count--;
+          if (count === 0) {
+            callback();
+          }
+        }
+        for (var i = 0; i < packages.length; i++) {
+          loadPackage(packages[i], packageLoaded);
+        }
+      }
+
+      var packages = ['axios'];
+      loadPackages(packages, function () {
+        try {
+          axios
+            .get('https://jsonplaceholder.typicode.com/posts/1')
+            .then(function (response) {
+              var speech = cowsay.say({
+                text: response.data.body,
+                e: 'oO',
+                t: 'U ',
+              });
+              document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
+            })
+            .catch(function (error) {
+              document.getElementById('cow-speech').innerHTML = error;
+            });
+        } catch (e) {
+          document.getElementById('cow-speech').innerHTML = e;
+        }
+      });
     </script>
   </body>
 </html>
