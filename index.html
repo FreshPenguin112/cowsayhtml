@@ -1,159 +1,79 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Cowsay</title>
-    <style>
-      /* Custom CSS for StackBlitz */
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
+<head>
+  <title>Dynamic Package Loading Example</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+    }
 
-      html {
-        filter: invert(100%);
-      }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dynamically Loaded Cowsay</h1>
+  <div id="cowsay-output"></div>
 
-      #cow-speech {
-        font-family: monospace;
-        font-size: 14px;
-        white-space: pre;
-        margin: 20px;
-        padding: 20px;
-        background-color: #f9f9f9;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        width: 100vw;
-        height: 100vh;
-        text-align: center;
-        line-height: 1.4;
+  <script>
+    // Function to randomly shuffle the letters in a string
+    function shuffleString(str) {
+      var arr = str.split('');
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
       }
+      return arr.join('');
+    }
 
-      #cow-speech pre {
-        margin: 0;
-      }
+    // Function to dynamically load a script
+    function loadScript(url, callback) {
+      var script = document.createElement('script');
+      script.src = url;
+      script.onload = callback;
+      document.head.appendChild(script);
+    }
 
-      #cow-speech .cow {
-        margin-bottom: 10px;
-        white-space: pre;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="cow-speech"></div>
+    // Load cowsay package dynamically
+    loadScript('https://unpkg.com/cowsay', function() {
+      var message = 'hello world';
+      var shuffledMessage = shuffleString(message);
+      var cow = cowsay.say({ text: shuffledMessage });
+      document.getElementById('cowsay-output').innerHTML = `<pre>${cow}</pre>`;
+    });
 
-    <script>
-      function loadScript(url, callback) {
-        var script = document.createElement('script');
-        script.src = url;
-        script.onload = callback;
-        script.onerror = function () {
-          throw new Error(`Failed to load script: ${url}`);
-        };
-        document.head.appendChild(script);
-      }
+    // Load confetti package dynamically
+    loadScript('https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1', function() {
+      var confettiCanvas = document.createElement('canvas');
+      document.body.appendChild(confettiCanvas);
 
-      function loadPackages(packages, callback) {
-        var count = packages.length;
-        function packageLoaded() {
-          count--;
-          if (count === 0) {
-            callback();
-          }
+      var confettiSettings = {
+        particleCount: Math.floor(0.25 * 50), // 25% of original particle count
+        angle: 180,
+        spread: .01,
+        startVelocity: 100,
+        colors: ['#bb0000', '#ffffff'],
+        origin: { y: .25, x: 1 }
+      };
+
+      function frame() {
+        confetti(confettiSettings);
+        if (true) {
+          requestAnimationFrame(frame);
         }
-
-        function loadNextPackage(index) {
-          var packageName = packages[index];
-          var urls = [
-            `https://unpkg.com/${packageName}/dist/${packageName}.min.js`,
-            `https://unpkg.com/${packageName}/build/${packageName}.min.js`,
-            `https://unpkg.com/${packageName}/umd/${packageName}.min.js`,
-            `https://unpkg.com/${packageName}/${packageName}.min.js`,
-            `https://unpkg.com/${packageName}/dist/${packageName}.min.mjs`,
-            `https://unpkg.com/${packageName}/build/${packageName}.min.mjs`,
-            `https://unpkg.com/${packageName}/umd/${packageName}.min.mjs`,
-            `https://unpkg.com/${packageName}/${packageName}.min.mjs`,
-            `https://unpkg.com/${packageName}/build/${packageName}.umd.js`,
-          ];
-
-          function tryNextURL(urlIndex) {
-            if (urlIndex >= urls.length) {
-              if (index < packages.length - 1) {
-                loadNextPackage(index + 1);
-              } else {
-                throw new Error(`Failed to load ${packageName} package.`);
-              }
-            } else {
-              var url = urls[urlIndex];
-              loadScript(url, function () {
-                packageLoaded();
-                callback();
-              });
-            }
-          }
-
-          tryNextURL(0);
-        }
-
-        loadNextPackage(0);
       }
-
-      var packages = ['axios', 'cowsay', 'canvas-confetti'];
-      loadPackages(packages, function () {
-        try {
-          var text = '';
-          var speech = '';
-
-          // Check if required variables/functions are exported by the package
-          for (var i = 0; i < packages.length; i++) {
-            if (typeof window[packages[i]] === 'undefined') {
-              throw new Error(`Failed to load ${packages[i]} package.`);
-            }
-          }
-
-          axios
-            .get('https://jsonplaceholder.typicode.com/todos/1')
-            .then(function (response) {
-              text = response.data.title;
-
-              // Check if the required function exists in the cowsay package
-              if (typeof cowsay.say !== 'function') {
-                throw new Error('Invalid cowsay package.');
-              }
-
-              // Generate cowsay speech
-              speech = cowsay.say({
-                text: text,
-              });
-
-              // Replace default eye and tongue characters
-              speech = speech.replace('oo', 'oO').replace('(__)', '(O)');
-
-              document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
-              confetti();
-            })
-            .catch(function (error) {
-              text = error;
-
-              // Check if the required function exists in the cowsay package
-              if (typeof cowsay.say !== 'function') {
-                throw new Error('Invalid cowsay package.');
-              }
-
-              // Generate cowsay speech
-              speech = cowsay.say({
-                text: text,
-              });
-
-              // Replace default eye and tongue characters
-              speech = speech.replace(/<\$\$>/g, 'oO').replace(/<\\>/g, 'U ');
-
-              document.getElementById('cow-speech').innerHTML = `<pre>${speech}</pre>`;
-            });
-        } catch (e) {
-          console.error(e);
-          document.getElementById('cow-speech').innerHTML = e;
-        }
-      });
-    </script>
-  </body>
+      frame();
+    });
+  </script>
+</body>
 </html>
